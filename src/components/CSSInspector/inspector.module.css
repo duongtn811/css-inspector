@@ -14,13 +14,6 @@
   padding: 4px;
 }
 
-.createdRow {
-  display: flex;
-  padding-left: 8px;
-  padding-right: 8px;
-  gap: 4px;
-}
-
 .currentRow {
   position: relative;
   display: flex;
@@ -38,10 +31,12 @@
   position: relative;
 }
 
-.value {
-  position: relative;
+.propertyInput {
+  border: none;
+  outline: none;
+  width: 8px;
 }
 
-.createdProperty {
-  color: var(--color-highlight-primary);
+.value {
+  position: relative;
 }

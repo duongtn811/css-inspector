@@ -1,0 +1,15 @@
+.createdProperty {
+  color: var(--color-highlight-primary);
+}
+
+.removed {
+  text-decoration: line-through;
+}
+
+.createdRow {
+    display: flex;
+    padding-left: 8px;
+    padding-right: 8px;
+    gap: 4px;
+  }
+  

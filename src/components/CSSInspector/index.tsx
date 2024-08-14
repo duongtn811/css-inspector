@@ -1,10 +1,17 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { cssPropertyValues } from "@/utils/constant";
+import React, {
+  KeyboardEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { KeyEvent, cssPropertyValues } from "@/utils/constant";
 import { ElementStyle } from "@/utils/types";
 import Dropdown from "@/components/Dropdown";
 import styles from "./inspector.module.css";
+import StyleList from "../StyleList";
 
 const cssProperties = Object.keys(cssPropertyValues);
 
@@ -32,6 +39,13 @@ const CSSInspector = () => {
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
+      event.target instanceof HTMLInputElement &&
+      (event.target.type === "checkbox" || event.target.type === "text")
+    ) {
+      return;
+    }
+
+    if (
       !dropdownRef.current ||
       (dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node))
@@ -51,7 +65,22 @@ const CSSInspector = () => {
     };
   }, []);
 
-  const handleClickBox = () => {
+  useEffect(() => {
+    if (propertyInputRef.current) {
+      const length = currentProperty.length * 8 || 8;
+      propertyInputRef.current.style.width = `${length}px`;
+    }
+  }, [propertyInputRef, currentProperty]);
+
+  const handleClickBox = (
+    event: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ) => {
+    const target = (event as unknown as Event).target;
+
+    if (target instanceof HTMLInputElement && target.type === "checkbox") {
+      setIsFocused(false);
+      return;
+    }
     setIsFocused(true);
   };
 
@@ -73,6 +102,18 @@ const CSSInspector = () => {
   };
 
   const handleSelectProperty = (option: string) => {
+    if (option.includes(":")) {
+      const property = option.split(":")[0];
+      const value = option.split(":")[1];
+      setIsPropertyDropdownOpen(false);
+      setElementStyles((prevState) => [
+        ...prevState,
+        { property: property, value: value, check: true },
+      ]);
+      clearAll();
+      return;
+    }
+
     setCurrentProperty(option);
     setIsPropertyDropdownOpen(false);
     valueInputRef.current?.focus();
@@ -93,23 +134,61 @@ const CSSInspector = () => {
     setIsValueDropdownOpen(false);
     setElementStyles((prevState) => [
       ...prevState,
-      { property: currentProperty, value: option },
+      { property: currentProperty, value: option, check: true },
     ]);
     clearAll();
     propertyInputRef.current?.focus();
   };
 
+  const handleUpdateStyle = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const newStyles = [...elementStyles].map((style, idx) => {
+      if (index === idx) {
+        return { ...style, check: event.target.checked };
+      }
+      return style;
+    });
+    setElementStyles(newStyles);
+  };
+
+  const handleKeyDownValue = (event: KeyboardEvent) => {
+    if (event.key === KeyEvent.Enter && currentProperty && currentValue) {
+      setElementStyles((prevState) => [
+        ...prevState,
+        { property: currentProperty, value: currentValue, check: true },
+      ]);
+      setCurrentProperty("");
+      setCurrentValue("");
+    }
+  };
+
   const filteredCssProperties = useMemo(() => {
-    return cssProperties.filter((option: string) =>
+    const defaultList = cssProperties;
+    const listWithValues: string[] = cssProperties.reduce(
+      (acc: string[], val: string) => {
+        const values = cssPropertyValues[val];
+        const propertyValues: string[] = values.map((v: string) => {
+          return `${val} : ${v}`;
+        });
+        return [...acc, ...propertyValues];
+      },
+      []
+    );
+    return [...defaultList, ...listWithValues].filter((option: string) =>
       option.includes(currentProperty)
     );
   }, [currentProperty]);
+
   const cssValues: string[] = useMemo(() => {
     if (cssProperties.includes(currentProperty)) {
-      return cssPropertyValues[currentProperty];
+      return cssPropertyValues[currentProperty].filter((value) =>
+        value.includes(currentValue)
+      );
     }
     return [];
-  }, [currentProperty]);
+  }, [currentProperty, currentValue]);
 
   const openText = "element.style {";
   const closedText = "}";
@@ -120,26 +199,17 @@ const CSSInspector = () => {
       <div className={styles.box} onClick={handleClickBox}>
         <div>{openText}</div>
         {isHavingProperties && (
-          <div>
-            {elementStyles.map((style: ElementStyle, index: number) => (
-              <div
-                key={`${style.property}.${index}`}
-                className={styles.createdRow}
-              >
-                <input type="checkbox" defaultChecked />
-                <div className={styles.createdProperty}>{style.property}</div>
-                <div> : </div>
-                <div>{style.value}</div>
-              </div>
-            ))}
-          </div>
+          <StyleList
+            onUpdateStyle={handleUpdateStyle}
+            elementStyles={elementStyles}
+          />
         )}
         {isFocused && (
           <div className={styles.currentRow}>
             <div className={styles.property}>
               <input
                 ref={propertyInputRef}
-                className={styles.input}
+                className={styles.propertyInput}
                 autoFocus={isFocused}
                 value={currentProperty}
                 onChange={handleChangeProperty}
@@ -159,6 +229,7 @@ const CSSInspector = () => {
                 className={styles.input}
                 value={currentValue}
                 onChange={handleChangeValue}
+                onKeyDown={handleKeyDownValue}
               />
               {isValueDropdownOpen && (
                 <Dropdown
