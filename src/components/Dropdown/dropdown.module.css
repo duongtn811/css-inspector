@@ -1,0 +1,20 @@
+.list {
+  list-style-type: none;
+  position: absolute;
+  top: 100%;
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  width: 120px;
+}
+
+.focused {
+  background-color: var(--color-focus-primary);
+}
+
+.option {
+  padding: 2px;
+}
