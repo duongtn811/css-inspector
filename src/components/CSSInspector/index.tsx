@@ -108,7 +108,7 @@ const CSSInspector = () => {
       setIsPropertyDropdownOpen(false);
       setElementStyles((prevState) => [
         ...prevState,
-        { property: property, value: value, check: true },
+        { property: property.trim(), value: value.trim(), check: true },
       ]);
       clearAll();
       return;
@@ -134,7 +134,7 @@ const CSSInspector = () => {
     setIsValueDropdownOpen(false);
     setElementStyles((prevState) => [
       ...prevState,
-      { property: currentProperty, value: option, check: true },
+      { property: currentProperty.trim(), value: option.trim(), check: true },
     ]);
     clearAll();
     propertyInputRef.current?.focus();
@@ -157,7 +157,7 @@ const CSSInspector = () => {
     if (event.key === KeyEvent.Enter && currentProperty && currentValue) {
       setElementStyles((prevState) => [
         ...prevState,
-        { property: currentProperty, value: currentValue, check: true },
+        { property: currentProperty.trim(), value: currentValue.trim(), check: true },
       ]);
       setCurrentProperty("");
       setCurrentValue("");

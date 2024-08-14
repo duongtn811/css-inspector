@@ -13,8 +13,11 @@ type IProps = {
 };
 
 const StyleList = ({ elementStyles, onUpdateStyle }: IProps) => {
-  const renderCheckbox = (value: string, index: number) => {
-    if (cssProperties.includes(value.trim())) {
+  const renderCheckbox = (property: string, value: string, index: number) => {
+    if (
+      cssProperties.includes(property.trim()) &&
+      cssPropertyValues[property.trim()].includes(value.trim())
+    ) {
       return (
         <input
           type="checkbox"
@@ -43,7 +46,7 @@ const StyleList = ({ elementStyles, onUpdateStyle }: IProps) => {
     <div>
       {elementStyles.map((style: ElementStyle, index: number) => (
         <div key={`${style.property}.${index}`} className={styles.createdRow}>
-          {renderCheckbox(style.property, index)}
+          {renderCheckbox(style.property, style.value, index)}
           <div
             className={`${styles.createdProperty} ${
               style.check ? "" : styles.removed
