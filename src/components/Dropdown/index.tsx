@@ -65,4 +65,5 @@ export const Dropdown = forwardRef<Ref, IProps>(({ onSelect, list }, ref) => {
   );
 });
 
+Dropdown.displayName = "DropDown";
 export default memo(Dropdown);
