@@ -161,6 +161,9 @@ const CSSInspector = () => {
       ]);
       setCurrentProperty("");
       setCurrentValue("");
+      if (propertyInputRef.current) {
+        propertyInputRef.current.focus();
+      }
     }
   };
 
